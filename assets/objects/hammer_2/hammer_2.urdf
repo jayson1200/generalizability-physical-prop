@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+        <robot name="model.urdf">
+        <link name="baseLink">
+            <contact>
+                <lateral_friction value="0.8"/>
+                <rolling_friction value="0.001"/>
+                <contact_cfm value="0.0"/>
+                <contact_erp value="1.0"/>
+            </contact>
+            <inertial>
+                <origin xyz="0.05 0 0" rpy="0 0 0"/>
+                <mass value="1.0"/>
+                <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+            </inertial>
+            <visual>
+            <geometry>
+                <mesh filename="hammer_2.obj" scale="1 1 1"/>
+            </geometry>
+            <material name="white"> <color rgba="1. 1. 1. 1."/> </material>
+            </visual>
+            <collision>
+            <geometry>
+                <mesh filename="hammer_2.obj" scale="1 1 1"/>
+            </geometry>
+            </collision>
+        </link>
+        </robot>

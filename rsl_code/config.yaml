@@ -1,0 +1,48 @@
+algorithm:
+  class_name: PPO
+  # training parameters
+  # -- advantage normalization
+  normalize_advantage_per_mini_batch: true
+  # -- value function
+  value_loss_coef: 1.0
+  clip_param: 0.2
+  use_clipped_value_loss: true
+  # -- surrogate loss
+  desired_kl: 0.01
+  entropy_coef: 0.01
+  gamma: 0.99
+  lam: 0.95
+  max_grad_norm: 1.0
+  # -- training
+  learning_rate: 0.0003
+  num_learning_epochs: 5
+  num_mini_batches: 16  # mini batch size = num_envs * num_steps / num_mini_batches
+  schedule: adaptive  # adaptive, fixed
+
+policy:
+  class_name: ActorCritic
+  activation: elu
+  actor_hidden_dims: [512, 512, 512]
+  critic_hidden_dims: [512, 512, 512]
+  init_noise_std: 1.0
+  noise_std_type: "scalar"  # 'scalar' or 'log'
+
+runner:
+    num_steps_per_env: 24  # number of steps per environment per iteration
+    max_iterations: 500  # number of policy updates
+    empirical_normalization: true
+    # -- logging parameters
+    save_interval: 50  # check for potential saves every `save_interval` iterations
+    experiment_name: pickup_exp
+    run_name: "pickup_exp"
+    # -- logging writer
+    logger: wandb  # tensorboard, neptune, wandb
+    neptune_project: maniskill
+    wandb_project: maniskill
+    # -- load and resuming
+    load_run: -1  # -1 means load latest run
+    resume_path: null  # updated from load_run and checkpoint
+    checkpoint: -1  # -1 means load latest checkpoint
+
+runner_class_name: OnPolicyRunner
+seed: 1

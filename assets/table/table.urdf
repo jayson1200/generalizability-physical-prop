@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="table">
+  <link name="table">
+    <visual>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="1x1x1_cube.obj" scale="0.76 1.53 0.05"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="1x1x1_cube.obj" scale="0.76 1.53 0.05"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="500"/>
+      <friction value="1.0"/>
+      <inertia ixx="1000.0" ixy="0.0" ixz="0.0" iyy="1000.0" iyz="0.0" izz="1000.0"/>
+    </inertial>
+  </link>
+</robot>
