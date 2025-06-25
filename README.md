@@ -1,5 +1,7 @@
 # Scaffolding Dexterous Manipulation with Vision-Language Models
 
+[Website](https://sites.google.com/view/dexterous-vlm-scaffolding) | [ArXiv](https://arxiv.org/abs/2506.19212)
+
 This is the official codebase for "Scaffolding Dexterous Manipulation with Vision-Language Models" by Vincent de Bakker, Joey Hejna, Tyler Ga Wei Lum, Onur Celik, Aleksandar Taranovic, Denis Blessing, Gerhard Neumann, Jeannette Bohg, and Dorsa Sadigh. 
 
 The framework enables training and deployment of dexterous manipulation policies using vision-language models for various manipulation tasks.
@@ -7,12 +9,14 @@ The framework enables training and deployment of dexterous manipulation policies
 If you find our paper or code insightful, feel free to cite us with the following bibtex:
 
 ```
-@InProceedings{debakker2025scaffoldingdexterousmanipulation,
-  title = {Scaffolding Dexterous Manipulation with Vision-Language Models},
-  author = {Vincent de Bakker and Joey Hejna and Tyler Ga Wei Lum and Onur Celik and Aleksandar Taranovic and Denis Blessing and Gerhard Neumann and Jeannette Bohg and Dorsa Sadigh},
-  booktitle = {ArXiv preprint},
-  year = {2025},
-  url = {}
+@misc{debakker2025scaffoldingdexterousmanipulationvisionlanguage,
+      title={Scaffolding Dexterous Manipulation with Vision-Language Models}, 
+      author={Vincent de Bakker and Joey Hejna and Tyler Ga Wei Lum and Onur Celik and Aleksandar Taranovic and Denis Blessing and Gerhard Neumann and Jeannette Bohg and Dorsa Sadigh},
+      year={2025},
+      eprint={2506.19212},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2506.19212}, 
 }
 ```
 
@@ -257,6 +261,20 @@ effort: []"
 Simulate a fake robot for testing:
 ```bash
 python -m real_world.fake_robot_ros_node
+```
+
+## BibTeX
+
+```
+@misc{debakker2025scaffoldingdexterousmanipulationvisionlanguage,
+      title={Scaffolding Dexterous Manipulation with Vision-Language Models}, 
+      author={Vincent de Bakker and Joey Hejna and Tyler Ga Wei Lum and Onur Celik and Aleksandar Taranovic and Denis Blessing and Gerhard Neumann and Jeannette Bohg and Dorsa Sadigh},
+      year={2025},
+      eprint={2506.19212},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2506.19212}, 
+}
 ```
 
 ## License
