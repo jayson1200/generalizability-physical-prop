@@ -12,8 +12,5 @@ setup_shell.sh
 *__pycache__/
 *.pth
 *.pt
-*.png
-*.jpg
-*.jpeg
 *.gif
 *.mp4
