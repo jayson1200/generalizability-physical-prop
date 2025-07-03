@@ -30,6 +30,7 @@ Create and activate a conda environment:
 conda create --name=vlm-scaffolding --python=3.10
 conda activate vlm-scaffolding
 pip install -r requirements.txt
+pip install networkx==2.5
 ```
 
 ### Gemini Setup
