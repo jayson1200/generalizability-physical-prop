@@ -11,9 +11,12 @@ import mujoco
 max_episode_steps = 300
 
 
-@register_env("EnvBottle-v0", max_episode_steps=max_episode_steps)
-class EnvBottleEnv(EnvKitchenSceneEnv):
-    def __init__(self, *args, start_limit=0.10, **kwargs):
+@register_env("EnvBottle-v0-var-scale", max_episode_steps=max_episode_steps, model_scale=1.5)
+class EnvBottleEnvVarScale(EnvKitchenSceneEnv):
+    def __init__(self, *args, start_limit=0.10, model_scale, **kwargs):
+        self.model_scale = model_scale
+        m = 0.105 / 1.5
+
         super().__init__(
             *args,
             start_limit=start_limit,
@@ -33,9 +36,10 @@ class EnvBottleEnv(EnvKitchenSceneEnv):
             max_episode_steps=max_episode_steps,
             individual_fingers=False,
             target_obj_name="bottle",
-            pose_height_offset_for_scale=[0.0, 0.0, 0.0],
+            pose_height_offset_for_scale=[0.0, 0.0, m * model_scale - 0.10],
             **kwargs
         )
+
 
     def _load_objects(self):
         import os
@@ -47,10 +51,8 @@ class EnvBottleEnv(EnvKitchenSceneEnv):
 
         # bottle_path = fix_density(bottle_path)
 
-        bottle_obj = MJCFObject(self.scene, "bottle", bottle_path, scale=1.5)
+        bottle_obj = MJCFObject(self.scene, "bottle", bottle_path, scale=self.model_scale)
         bottle_obj.pos = [-2.1, -2.0, 0.974]
-
-        model = mujoco.MjModel.from_xml_path("/iliad2/u/jmeribe/projects/vlm-scaffolding/assets/objects/bottled_water/model.xml")
 
         bottle = bottle_obj.build(list(range(self.num_envs))).actor
         self.all_objects["bottle_0"] = bottle

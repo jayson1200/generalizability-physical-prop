@@ -9,6 +9,7 @@ from mani_skill.utils import common, sapien_utils, structs
 from mani_skill.utils.geometry.geometry import transform_points
 from mani_skill.utils.scene_builder import SceneBuilder
 from mani_skill.utils.scene_builder.registration import REGISTERED_SCENE_BUILDERS
+from mani_skill.utils.structs import Pose
 from mani_skill.utils.structs.types import (
     DefaultMaterialsConfig,
     GPUMemoryConfig,
@@ -19,9 +20,10 @@ from scipy.spatial.transform import Rotation as R
 
 from tasks.utils import replicacad_scene_builder
 from utils.allegro import AllegroHand
+from einops import rearrange
 
 
-class EnvKitchenSceneEnv(BaseEnv):
+class EnvKitchenSceneEnvWithObjRandomization(BaseEnv):
     SUPPORTED_ROBOTS = ["allegro_hand"]
     agent: Union[AllegroHand]
 
@@ -54,8 +56,11 @@ class EnvKitchenSceneEnv(BaseEnv):
         random_objs=[],
         touch_keypoints=None,
         max_episode_steps=300,
-        pose_height_offset_for_scale=[0.0, 0.0, 0.0],
         target_obj_name=None,
+        pose_offset_per_environment = None,
+        physical_prop_embed = None,
+        initial_rotations=None,
+        include_physical_embeds=None,
         **kwargs,
     ):
         self.selected_objs = selected_objs
@@ -66,9 +71,13 @@ class EnvKitchenSceneEnv(BaseEnv):
         self.load_keypoints = load_keypoints
         self.load_trajectories = load_trajectories
         self.build_background = build_background
+
         # Jayson's Stuff -----
-        self.pose_height_offset_for_scale = pose_height_offset_for_scale
         self.target_obj_name = target_obj_name
+        self.pose_offset_per_environment = pose_offset_per_environment
+        self.physical_embeds = torch.from_numpy(physical_prop_embed).to(device="cuda")
+        self.initial_rotations = torch.from_numpy(initial_rotations) if initial_rotations is not None else None
+        self.include_physical_embeds = include_physical_embeds
         # Jayson's Stuff
 
         self.total_steps = total_steps
@@ -431,13 +440,13 @@ class EnvKitchenSceneEnv(BaseEnv):
                 self.trajectories[name] = self.trajectories[name].float()
 
                 # Jayson's code ----
-                if name == self.target_obj_name:
-                    print("Adding offset to target object poses and trajectories.")
-                    offset = torch.tensor(self.pose_height_offset_for_scale, dtype=self.trajectories[name].dtype, device=self.trajectories[name].device)
-                    offset = offset.reshape(1, 1, 3)
-                    self.trajectories[name] += offset
-                    pad = torch.zeros((1, 4), dtype=self.trajectories[name].dtype, device=self.trajectories[name].device)
-                    self.object_poses[name+ "_0"] += torch.cat([offset.reshape(1,3), pad], axis=-1)
+                # if name == self.target_obj_name:
+                #     print("Adding offset to target object poses and trajectories.")
+                #     offset = torch.tensor(self.pose_offset_per_environment, dtype=self.trajectories[name].dtype, device=self.trajectories[name].device) 
+                #     self.trajectories[name] += rearrange(offset, "num_envs dim -> num_envs 1 dim")
+                    
+                #     pad = torch.zeros((offset.shape[0], 4), dtype=self.trajectories[name].dtype, device=self.trajectories[name].device)
+                #     self.object_poses[name + "_0"] += torch.cat([offset, pad], axis=-1)
                 # ---------
 
                 self.cur_traj[name] = torch.zeros(
@@ -509,6 +518,9 @@ class EnvKitchenSceneEnv(BaseEnv):
             "tip_poses": self.agent.tip_poses.clone().reshape(self.num_envs, -1),
             "action_avg": self.action_avg.clone(),
         }
+
+        if self.include_physical_embeds:
+            obs["physical_embed"] = self.physical_embeds.clone()
 
         keypoint_pos = self.get_keypoint_positions()
         for name in self.keypoints:
@@ -655,11 +667,24 @@ class EnvKitchenSceneEnv(BaseEnv):
             self.traj_idx[env_idx] = idxs
             if self.reset_to is not None:
                 self.traj_idx[env_idx] = self.reset_to
+            
+            # Jayson's code ----
+            offset = None
+            # Jayson's code ----
 
             for name in self.trajectories.keys():
                 self.cur_traj[name][env_idx] = self.trajectories[name][
                     self.traj_idx[env_idx]
                 ]
+
+                # Jayson's Code ----
+                if name == self.target_obj_name:
+                    # print("Adding offset to target trajectories.")
+                    offset = torch.from_numpy(self.pose_offset_per_environment).to(dtype=self.trajectories[name].dtype, device=self.trajectories[name].device)
+
+                    self.cur_traj[name][env_idx] += rearrange(offset[env_idx], "num_envs dim -> num_envs 1 dim")
+                # Jayson's Code ---------
+                
                 if self.method == "replay":
                     random_idxs = torch.randint(
                         0,
@@ -677,8 +702,15 @@ class EnvKitchenSceneEnv(BaseEnv):
                         ]
 
             self._set_start_joints(env_idx)
+            # Edited following for loop scope
             for obj in self.all_objects.values():
-                obj.set_pose(obj.initial_pose)
+                
+                if obj.initial_pose.raw_pose.shape[0] == 1:
+                    raw_pose_tensor = obj.initial_pose.raw_pose[0]
+                else:
+                    raw_pose_tensor = obj.initial_pose.raw_pose[env_idx]
+                
+                obj.set_pose(Pose.create_from_pq(p=raw_pose_tensor[..., :3], q=raw_pose_tensor[..., 3:]))
 
             for art in self.all_articulations.values():
                 art.set_pose(art.initial_pose)
@@ -698,7 +730,21 @@ class EnvKitchenSceneEnv(BaseEnv):
                         obj = self.all_objects[name]
                     else:
                         obj = self.all_articulations[name]
-                    obj_pose = self.object_poses[name][self.traj_idx[env_idx]]
+                     
+                    obj_pose = self.object_poses[name][self.traj_idx[env_idx]] 
+                    
+                    # Jayson's code ----
+                    if name == self.target_obj_name + "_0":
+                        #print("Adding offset to target object poses.")
+                        name_prefix = name.split("_")[0]
+
+                        obj_pose[:, :3] += offset[env_idx].to(dtype=obj_pose.dtype, device=obj_pose.device)
+
+                        if self.initial_rotations is not None:
+                            self.initial_rotations = self.initial_rotations.to(dtype=obj_pose.dtype, device=obj_pose.device) 
+                            obj_pose[:, 3:] = self.initial_rotations[env_idx]
+
+                    # Jayson's code ---------
                     obj_pose = structs.pose.Pose.create_from_pq(
                         p=obj_pose[..., :3], q=obj_pose[..., 3:]
                     )

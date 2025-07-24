@@ -6,6 +6,7 @@ from datetime import datetime
 import gymnasium as gym
 import yaml
 from mani_skill.vector.wrappers.gymnasium import ManiSkillVectorEnv
+from mani_skill.utils.structs.types import SimConfig
 
 from rsl_code.on_policy_runner import OnPolicyRunner
 from rsl_code.wrapper import RslRlVecEnvWrapper
@@ -39,6 +40,8 @@ def parse_args():
         default="TrackTomato-v0",
         help="Environment name to train on",
     )
+    parser.add_argument("--distribution", type=str, default="uniform(loc=0.0, scale=1.0)", help="Split to train on")
+    
     return parser.parse_args()
 
 
@@ -63,6 +66,7 @@ def create_env(env_name, num_envs):
         use_wrist=use_wrist,
         delta_action=delta_action,
         split=args.split,
+        distribution=args.distribution,
     )
     env = ManiSkillVectorEnv(
         env, num_envs, ignore_terminations=False, record_metrics=True

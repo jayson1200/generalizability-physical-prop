@@ -37,7 +37,7 @@ from utils.keypoint import Keypoint
 
 # Configuration
 LOCATION = "us-central1"
-PROJECT = ""  # replace
+PROJECT = "vlm-dex"  # replace
 MODEL = "gemini-2.5-flash-preview-04-17"
 EPISODE_LENGTH = 300
 
@@ -654,6 +654,7 @@ async def main_async():
     task_spec.test_mode = args.test
 
     folder = f"data/{args.method}/{task_spec.folder}/{args.split}"
+
     if os.path.exists(folder):
         if args.method not in (
             "gemini_few_shot_tracking",
@@ -756,8 +757,11 @@ async def main_async():
 
     if args.method in ["gemini_keypoint_oracle", "scripted"]:
         gemini_folder = f"data/gemini/{task_spec.folder}/test"
+        keypoints = None
+
         if os.path.exists(gemini_folder):
             keypoints_file = os.path.join(gemini_folder, "keypoints.pt")
+            print(keypoints_file)
             if os.path.exists(keypoints_file):
                 keypoints = torch.load(keypoints_file, weights_only=False)
                 logging.info(f"Loaded keypoints: {keypoints}")
@@ -1274,7 +1278,7 @@ Use the following json format for the trajectory:
 
     frames = []
     obs, _ = env_with_trajectories.reset()
-    for _ in tqdm.tqdm(range(length), desc="Visualizing trajectories"):
+    for _ in tqdm.tqdm(range(EPISODE_LENGTH), desc="Visualizing trajectories"):
         action = env_with_trajectories.action_space.sample()
         obs, reward, terminated, truncated, info = env_with_trajectories.step(action)
 

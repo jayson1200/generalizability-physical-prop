@@ -3,3 +3,8 @@ from .env_apple_arm import EnvAppleArm
 from .env_bottle import EnvBottleEnv
 from .env_bottle_arm import EnvBottleArmEnv
 from .env_box_arm import EnvBoxArmEnv
+from .env_bottle_var_scale import EnvBottleEnvVarScale
+from .env_apple_var_scale import EnvAppleEnvVarScale
+from .env_apple_phys_rand import EnvAppleEnvPhysRand
+from .env_bottle_phys_rand import EnvBottleEnvPhysRand
+from .env_bottle_phys_rand_with_cond import EnvBottleEnvPhysRandWithCond

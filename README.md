@@ -27,10 +27,9 @@ If you find our paper or code insightful, feel free to cite us with the followin
 Create and activate a conda environment:
 
 ```bash
-conda create --name vlm-scaffolding python=3.10
+conda create --name=vlm-scaffolding --python=3.10
 conda activate vlm-scaffolding
 pip install -r requirements.txt
-pip install networkx==2.5
 ```
 
 ### Gemini Setup

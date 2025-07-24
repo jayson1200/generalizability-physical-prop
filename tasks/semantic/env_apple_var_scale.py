@@ -13,9 +13,12 @@ import mujoco
 max_episode_steps = 300
 
 
-@register_env("EnvApple-v0", max_episode_steps=max_episode_steps)
-class EnvAppleEnv(EnvKitchenSceneEnv):
-    def __init__(self, *args, start_limit=0.10, **kwargs):
+@register_env("EnvApple-v0-var-scale", max_episode_steps=max_episode_steps, model_scale=1.5)
+class EnvAppleEnvVarScale(EnvKitchenSceneEnv):
+    def __init__(self, *args, start_limit=0.10, model_scale, **kwargs):
+        self.model_scale = model_scale
+        m = 0.055 / 1.5
+        bias = -0.055
         super().__init__(
             *args,
             start_limit=start_limit,
@@ -34,9 +37,10 @@ class EnvAppleEnv(EnvKitchenSceneEnv):
             max_episode_steps=max_episode_steps,
             individual_fingers=False,
             target_obj_name="apple",
-            pose_height_offset_for_scale=[0.0, 0.0, 0.0],
+            pose_height_offset_for_scale=[0.0, 0.0, m * model_scale - 0.055],
             **kwargs
         )
+
 
     def _load_objects(self):
         import os
@@ -45,10 +49,9 @@ class EnvAppleEnv(EnvKitchenSceneEnv):
         apple_path = os.path.join(current_dir, "assets/objects/apple/model.xml")
         # apple_path = fix_density(apple_path)
 
-        apple = MJCFObject(self.scene, "apple", apple_path, scale=1.5)
+        apple = MJCFObject(self.scene, "apple", apple_path, scale=self.model_scale)
         apple.pos = [-2.0, -0.7, 0.924]
         apple = apple.build(list(range(self.num_envs))).actor
-        print(self.num_envs)
         self.all_objects["apple_0"] = apple
 
         cutting_board_path = os.path.join(

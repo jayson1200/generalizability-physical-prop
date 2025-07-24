@@ -1,7 +1,9 @@
 logs/
+assets/
+assets_cpy/
 notebooks/logs/
 slurm_logs/
-*videos/
+videos/
 real_videos2/
 data/
 vis/
@@ -14,3 +16,4 @@ setup_shell.sh
 *.pt
 *.gif
 *.mp4
+core
