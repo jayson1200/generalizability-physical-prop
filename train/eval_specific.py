@@ -25,8 +25,11 @@ def parse_args():
     parser.add_argument("--split", type=str, help="Dataset to test on")
     parser.add_argument("--model-path", type=str, help="Path to model")
     parser.add_argument("--env-name", type=str, default="TrackTomato-v0", help="Environment name to train on")
-    parser.add_argument("--distribution", type=str, default="uniform(loc=0.0, scale=1.0)", help="Split to train on")
-    
+    parser.add_argument("--distribution", type=str, default="uniform(loc=0.0, scale=1.0)", help="Distirbution to sample from")
+    parser.add_argument("--output-file-name", type=str, help="data output file")
+    parser.add_argument("--varying-params", type=str, help="parameters that should be varied")
+    parser.add_argument("--non-varying-initial", type=str, help="values for the params not varied")
+
     return parser.parse_args()
 
 args = parse_args()
@@ -39,9 +42,12 @@ run_name = "irrelevant"
 model_name = model_path.split("/")[-1]
 distribution = args.distribution
 num_envs = 1024
+output_file_name = args.output_file_name
+varying_params = args.varying_params
+non_varying_initial = args.non_varying_initial
 
 
-results_file = "tracking_results.csv"
+results_file = output_file_name
 if os.path.exists(results_file):
     results_df = pd.read_csv(results_file, index_col=0)
 else:
@@ -55,6 +61,7 @@ else:
             "model_name",
             "split",
             "distribution",
+            "varying_params"
         ]
     )
 
@@ -80,6 +87,7 @@ eval_envs = gym.make(
     control_mode="pd_joint_pos",
     split=split,
     distribution=distribution,
+    varying_params = varying_params,
 )
 max_len = eval_envs.unwrapped.max_episode_steps
 eval_envs = ManiSkillVectorEnv(
@@ -121,6 +129,7 @@ row_data = {
     "model_name": model_name,
     "split": split,
     "distribution": distribution,
+    "varying_params": varying_params
 }
 
 

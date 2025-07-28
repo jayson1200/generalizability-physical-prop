@@ -22,13 +22,13 @@ MAX_SCALE = 7
 MAX_COM_DIM_VALUE = 1
 
 
-@register_env("EnvBottle-v0-phys-rand",
+@register_env("EnvBottle-v0-phys-rand-for-base",
               model_scale=1.5, 
               varying_params="[True, True, True, False, False, True]",
               non_varying_params_values="[0.9, 1000, 1.5, 0.0, 0.0, 0.5]",
               distribution="uniform(loc=0.0, scale=1.0)", 
               max_episode_steps=max_episode_steps)
-class EnvBottleEnvPhysRand(EnvKitchenSceneEnvWithObjRandomization):
+class EnvBottleEnvPhysRandForBase(EnvKitchenSceneEnvWithObjRandomization):
     def __init__(self, 
                  *args, 
                  model_scale = 1.5, 

@@ -22,27 +22,42 @@ MAX_SCALE = 7
 MAX_COM_DIM_VALUE = 1
 
 
-@register_env("EnvBottle-v0-phys-rand-with-cond", max_episode_steps=max_episode_steps, model_scale=1.5, distribution="uniform(loc=0.0, scale=1.0)")
+@register_env("EnvBottle-v0-phys-rand-with-cond",
+              model_scale=1.5, 
+              varying_params="[True, True, True, False, False, True]",
+              non_varying_params_values="[0.9, 1000, 1.5, 0.0, 0.0, 0.5]",
+              distribution="uniform(loc=0.0, scale=1.0)", 
+              max_episode_steps=max_episode_steps)
 class EnvBottleEnvPhysRandWithCond(EnvKitchenSceneEnvWithObjRandomization):
-    def __init__(self, *args, distribution="uniform(loc=0.0, scale=1.0)", start_limit=0.10, model_scale = 1.5, **kwargs): 
-        self.m = 0.105 / 1.5
-        self.bias = -0.1
+    def __init__(self, 
+                 *args, 
+                 model_scale = 1.5, 
+                 varying_params="[True, True, True, False, False, True]",
+                 non_varying_params_values="[0.9, 1000, 1.5, 0.0, 0.0, 0.5]",
+                 distribution="uniform(loc=0.0, scale=1.0)", 
+                 start_limit=0.10, 
+                 **kwargs):
+        
+        self.m = 0.055 / 1.5
+        self.bias = -0.045
+        
+        self.varying_params = np.array(eval(varying_params)).astype(float).reshape(1, -1)
         self.param_max_values = np.array([MAX_FRICTION,
                                           MAX_DENSITY,
                                           MAX_SCALE,
                                           0,
                                           0,
-                                          MAX_COM_DIM_VALUE]).reshape(1, -1)
+                                          MAX_COM_DIM_VALUE], dtype=float).reshape(1, -1) * self.varying_params
+        self.non_varying_params_values = np.array(eval(non_varying_params_values)).astype(float).reshape(1, -1)
         
-        self.max_friction = MAX_FRICTION
-        self.max_density = MAX_DENSITY
-        self.max_scale = MAX_SCALE
-        self.max_com_dim_value = MAX_COM_DIM_VALUE
         num_envs = kwargs.get("num_envs")
 
         self.distribution = eval(distribution)
         self.samples = self.distribution.rvs(size=(num_envs, num_physical_props)) 
         self.params = self.samples * self.param_max_values
+        
+        self.params += (1 - self.varying_params) * self.non_varying_params_values
+
         self.params[:, -1] -= 0.5
 
         self.scales = self.params[:, 2]

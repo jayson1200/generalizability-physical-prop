@@ -27,58 +27,48 @@ MAX_SCALE = 5
 MAX_COM_DIM_VALUE = 1
 
 
-@register_env("EnvApple-v0-phys-rand", model_scale=1.5, distribution="uniform(loc=0.0, scale=1.0)", max_episode_steps=max_episode_steps)
+@register_env("EnvApple-v0-phys-rand",
+              model_scale=1.5, 
+              varying_params="[True, True, True, False, False, True]",
+              non_varying_params_values="[0.9, 1000, 1.5, 0.0, 0.0, 0.5]",
+              distribution="uniform(loc=0.0, scale=1.0)", 
+              max_episode_steps=max_episode_steps)
 class EnvAppleEnvPhysRand(EnvKitchenSceneEnvWithObjRandomization):
-    def __init__(self, *args, model_scale =1.5, distribution="uniform(loc=0.0, scale=1.0)", start_limit=0.10, **kwargs):
+    def __init__(self, 
+                 *args, 
+                 model_scale = 1.5, 
+                 varying_params="[True, True, True, False, False, True]",
+                 non_varying_params_values="[0.9, 1000, 1.5, 0.0, 0.0, 0.5]",
+                 distribution="uniform(loc=0.0, scale=1.0)", 
+                 start_limit=0.10, 
+                 **kwargs):
+        
         self.m = 0.055 / 1.5
         self.bias = -0.045
+        
+        self.varying_params = np.array(eval(varying_params)).astype(float).reshape(1, -1)
         self.param_max_values = np.array([MAX_FRICTION,
                                           MAX_DENSITY,
                                           MAX_SCALE,
-                                          MAX_COM_DIM_VALUE,
-                                          MAX_COM_DIM_VALUE,
-                                          MAX_COM_DIM_VALUE]).reshape(1, -1)
+                                          0,
+                                          0,
+                                          MAX_COM_DIM_VALUE], dtype=float).reshape(1, -1) * self.varying_params
+        self.non_varying_params_values = np.array(eval(non_varying_params_values)).astype(float).reshape(1, -1)
         
-        self.max_friction = MAX_FRICTION
-        self.max_density = MAX_DENSITY
-        self.max_scale = MAX_SCALE
-        self.max_com_dim_value = MAX_COM_DIM_VALUE
         num_envs = kwargs.get("num_envs")
 
         self.distribution = eval(distribution)
         self.samples = self.distribution.rvs(size=(num_envs, num_physical_props)) 
         self.params = self.samples * self.param_max_values
+        
+        self.params += (1 - self.varying_params) * self.non_varying_params_values
+
+        self.params[:, -1] -= 0.5
+
         self.scales = self.params[:, 2]
 
         self.offsets = np.zeros((num_envs, 3)) 
         self.offsets[:, 2] = self.m * self.scales + self.bias
-
-        (
-            _, 
-            _, 
-            _, 
-            self.center_of_mass_x,
-            self.center_of_mass_y,
-            self.center_of_mass_z
-        ) = self.params.T
-
-        self.center_of_mass_x = self.center_of_mass_x.reshape(-1, 1)
-        self.center_of_mass_y = self.center_of_mass_y.reshape(-1, 1)
-        self.center_of_mass_z = self.center_of_mass_z.reshape(-1, 1)
-        
-        center_of_mass = np.hstack([self.center_of_mass_x,
-                                    self.center_of_mass_y,
-                                    self.center_of_mass_z]) - 0.5
-
-
-        target_center_of_mass_vec = np.array([0.0, 0.0, -1.0])
-        center_of_mass = center_of_mass / np.linalg.norm(center_of_mass, axis=1, keepdims=True)
-        targets = repeat(target_center_of_mass_vec, "dim -> num_envs dim", num_envs=num_envs)
-
-        axis_of_rotation = np.cross(center_of_mass, targets)
-        angle_of_rotation = np.arccos(np.clip(einsum(center_of_mass, targets, "num_envs dim, num_envs dim -> num_envs"), -0.999, 0.999))
-
-        initial_rotations = Rotation.from_rotvec(axis_of_rotation * angle_of_rotation[: , np.newaxis]).as_quat()
 
         
         super().__init__(
@@ -101,7 +91,6 @@ class EnvAppleEnvPhysRand(EnvKitchenSceneEnvWithObjRandomization):
             target_obj_name="apple",
             pose_offset_per_environment=self.offsets,
             physical_prop_embed = self.samples,
-            initial_rotations=initial_rotations,
             **kwargs
         )
 

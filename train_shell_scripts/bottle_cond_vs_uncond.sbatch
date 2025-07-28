@@ -16,14 +16,37 @@ conda activate vlm-dex
 # Go to your project directory
 cd /iliad2/u/jmeribe/projects/vlm-scaffolding
 
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand-with-cond/train1/2025-07-23_14-44-16/model_1999.pt  --env-name EnvBottle-v0-phys-rand-with-cond --distribution "beta(a=6.1, b=50.0)"
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand/train1/2025-07-23_15-23-08/model_1999.pt  --env-name EnvBottle-v0-phys-rand --distribution "beta(a=6.1, b=50.0)"
+MODELS=(1999 1750 1250 750 250)
+SPLITS=(test train1)
+#DISTS=(
+#  "beta(a=6.1, b=50.0)"
+#  "beta(a=50, b=6.1)"
+#  "beta(a=50, b=50)"
+#)
 
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand-with-cond/train1/2025-07-23_14-44-16/model_1999.pt  --env-name EnvBottle-v0-phys-rand-with-cond --distribution "beta(a=6.1, b=50.0)"
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand/train1/2025-07-23_15-23-08/model_1999.pt  --env-name EnvBottle-v0-phys-rand --distribution "beta(a=6.1, b=50.0)"
+DISTS=(
+  "beta(a=2.5, b=1.9)"
+  "beta(a=2.5, b=6.8)"
+)
 
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand-with-cond/train1/2025-07-23_14-44-16/model_1999.pt  --env-name EnvBottle-v0-phys-rand-with-cond --distribution "beta(a=50, b=6.1)"
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand/train1/2025-07-23_15-23-08/model_1999.pt  --env-name EnvBottle-v0-phys-rand --distribution "beta(a=50, b=6.1)"
+for MODEL in "${MODELS[@]}"; do
+  for SPLIT in "${SPLITS[@]}"; do
+    for DIST in "${DISTS[@]}"; do
 
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand-with-cond/train1/2025-07-23_14-44-16/model_1999.pt  --env-name EnvBottle-v0-phys-rand-with-cond --distribution "beta(a=50, b=6.1)"
-python -m train.eval_specific --method scripted --split test --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand/train1/2025-07-23_15-23-08/model_1999.pt  --env-name EnvBottle-v0-phys-rand --distribution "beta(a=50, b=6.1)"
+      python -m train.eval_specific_two \
+        --method scripted \
+        --split "${SPLIT}" \
+        --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand-with-cond/train1/2025-07-23_14-44-16/model_${MODEL}.pt \
+        --env-name EnvBottle-v0-phys-rand-with-cond \
+        --distribution "${DIST}"
+
+      python -m train.eval_specific_two \
+        --method scripted \
+        --split "${SPLIT}" \
+        --model-path /iliad/u/jmeribe/projects/vlm-scaffolding/logs/scripted/EnvBottle-v0-phys-rand/train1/2025-07-23_15-23-08/model_${MODEL}.pt \
+        --env-name EnvBottle-v0-phys-rand \
+        --distribution "${DIST}"
+
+    done
+  done
+done

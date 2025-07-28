@@ -5,6 +5,11 @@ from .env_bottle_arm import EnvBottleArmEnv
 from .env_box_arm import EnvBoxArmEnv
 from .env_bottle_var_scale import EnvBottleEnvVarScale
 from .env_apple_var_scale import EnvAppleEnvVarScale
+
 from .env_apple_phys_rand import EnvAppleEnvPhysRand
+from .env_apple_phys_rand_with_cond import EnvAppleEnvPhysRandWithCond
+from .env_apple_phys_rand_for_base import EnvAppleEnvPhysRandForBase
+
 from .env_bottle_phys_rand import EnvBottleEnvPhysRand
 from .env_bottle_phys_rand_with_cond import EnvBottleEnvPhysRandWithCond
+from .env_bottle_phys_rand_for_base import EnvBottleEnvPhysRandForBase
